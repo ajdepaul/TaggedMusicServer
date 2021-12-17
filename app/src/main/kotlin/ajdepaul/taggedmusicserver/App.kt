@@ -4,12 +4,19 @@
  */
 package ajdepaul.taggedmusicserver
 
-import ajdepaul.taggedmusicserver.plugins.configureRouting
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import ajdepaul.taggedmusicserver.routes.songRouting
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.routing.*
+import io.ktor.serialization.*
 
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
-        configureRouting()
-    }.start(wait = true)
+fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+
+fun Application.module() {
+    install(ContentNegotiation) {
+        json()
+    }
+    routing {
+        songRouting()
+    }
 }
