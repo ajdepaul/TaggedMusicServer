@@ -4,15 +4,15 @@
  */
 package ajdepaul.taggedmusicserver.routes
 
+import ajdepaul.taggedmusicserver.librarysources.LibrarySource
 import ajdepaul.taggedmusicserver.models.Song
-import ajdepaul.taggedmusicserver.models.songs
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 
-fun Route.songRouting() {
+fun Route.songRouting(librarySource: LibrarySource<*>) {
     route("/song") {
         get {
             if (songs.isNotEmpty()) {

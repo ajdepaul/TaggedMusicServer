@@ -2,6 +2,9 @@
 
 Back-end server for [Tagged Music](https://github.com/ajdepaul/TaggedMusic).
 
+This server requires a connection to a MySQL Server. Use the `library_init.sql` script to initialize
+a tagged music database.
+
 ### Building
 
 Run `./gradlew build` to compile. The output is located in [app/build/libs](app/build/libs).
