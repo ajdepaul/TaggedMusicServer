@@ -268,6 +268,11 @@ CREATE PROCEDURE Users_update_username(arg_user_id INT, new_username VARCHAR(255
     UPDATE Users SET username = new_username WHERE user_id = arg_user_id;
 END &&
 
+-- Updates a user's password.
+CREATE PROCEDURE Users_update_password(arg_user_id INT, new_salt VARCHAR(16), new_pass_hash VARCHAR(44)) BEGIN
+    UPDATE Users SET salt = new_salt, pass_hash = new_pass_hash WHERE user_id = arg_user_id;
+END &&
+
 -- Removes all user data from every table.
 CREATE PROCEDURE Users_remove(arg_user_id INT) BEGIN
     DELETE FROM Data WHERE user_id = arg_user_id;

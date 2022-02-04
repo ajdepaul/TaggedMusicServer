@@ -7,61 +7,187 @@ package ajdepaul.taggedmusicserver.librarysources
 import ajdepaul.taggedmusicserver.models.Song
 import ajdepaul.taggedmusicserver.models.Tag
 import ajdepaul.taggedmusicserver.models.TagType
+import ajdepaul.taggedmusicserver.models.User
 
-interface LibrarySource<E> {
+/** The [LIBRARY_VERSION] indicates what format and features is expected. */
+const val LIBRARY_VERSION = "1.0"
+
+/** Used to retrieve data about users' libraries. */
+interface LibrarySource {
 
     /* ----------------------------------------- Retrieving ----------------------------------------- */
 
-    fun getVersion(): Response<String, E?>
+    /** Retrieve the [LIBRARY_VERSION] of this [LibrarySource]. */
+    fun getVersion(): Response<String>
 
-    fun getDefaultTagType(): Response<TagType, E?>
+    /**
+     * Retrieves the [TagType] to use when a [Tag] has no [TagType].
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getDefaultTagType(userId: Int): Response<TagType?>
 
-    fun hasSong(fileName: String): Response<Boolean, E?>
+    /**
+     * Checks if [fileName] is a [Song] that exists in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun hasSong(userId: Int, fileName: String): Response<Boolean>
 
-    fun getSong(fileName: String): Response<Song?, E?>
+    /**
+     * Retrieves the [Song] that corresponds to the key [fileName].
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getSong(userId: Int, fileName: String): Response<Song?>
 
-    fun getAllSongs(): Response<Map<String, Song>, E?>
+    /**
+     * Retrieves all [Song]s in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getAllSongs(userId: Int): Response<Map<String, Song>>
 
+    /**
+     * Retrieves a map of songs according to the provided filters.
+     * @param userId specifies which [User]'s library to use
+     * @param includeTags songs must have all of these tags (if empty, includes all tags)
+     * @param excludeTags songs cannot have any of these tags (if empty, excludes no tags)
+     */
     fun getSongsByTags(
+        userId: Int,
         includeTags: Set<String> = setOf(),
         excludeTags: Set<String> = setOf()
-    ): Response<Map<String, Song>, E?>
+    ): Response<Map<String, Song>>
 
-    fun hasTag(tagName: String): Response<Boolean, E?>
+    /**
+     * Checks if [tagName] is a [Tag] that exists in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun hasTag(userId: Int, tagName: String): Response<Boolean>
 
-    fun getTag(tagName: String): Response<Tag?, E?>
+    /**
+     * Retrieves the [Tag] that corresponds to the key [tagName].
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getTag(userId: Int, tagName: String): Response<Tag?>
 
-    fun getAllTags(): Response<Map<String, Tag>, E?>
+    /**
+     * Retrieves all [Tag]s in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getAllTags(userId: Int): Response<Map<String, Tag>>
 
-    fun hasTagType(tagTypeName: String): Response<Boolean, E?>
+    /**
+     * Checks if [tagTypeName] is a [TagType] that exists in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun hasTagType(userId: Int, tagTypeName: String): Response<Boolean>
 
-    fun getTagType(tagTypeName: String): Response<TagType?, E?>
+    /**
+     * Retrieves the [TagType] that corresponds to the key [tagTypeName].
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getTagType(userId: Int, tagTypeName: String): Response<TagType?>
 
-    fun getAllTagTypes(): Response<Map<String, TagType>, E?>
+    /**
+     * Retrieves all [TagType]s in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getAllTagTypes(userId: Int): Response<Map<String, TagType>>
 
-    fun hasData(key: String): Response<Boolean, E?>
+    /**
+     * Checks if [key] is a data entry that exists in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun hasData(userId: Int, key: String): Response<Boolean>
 
-    fun getData(key: String): Response<String?, E?>
+    /**
+     * Retrieves the data entry that corresponds to [key].
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getData(userId: Int, key: String): Response<String?>
 
-    fun getAllData(): Response<Map<String, String>, E?>
+    /**
+     * Retrieves all data entries in the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun getAllData(userId: Int): Response<Map<String, String>>
 
 /* ------------------------------------------ Updating ------------------------------------------ */
 
-    fun setDefaultTagType(tagType: TagType): Response<TagType, E?>
+    /**
+     * Sets the [TagType] to use when a [Tag] has no [TagType].
+     * @param userId specifies which [User]'s library to use
+     */
+    fun setDefaultTagType(userId: Int, tagType: TagType): Response<Unit>
 
-    fun putSong(fileName: String, song: Song): Response<Song?, E?>
+    /**
+     * Adds or updates [song] to the library and adds any new [Tag]s in [song]'s [Tag]s to the [Tag]
+     * map.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun putSong(userId: Int, fileName: String, song: Song): Response<Unit>
 
-    fun removeSong(fileName: String): Response<Song?, E?>
+    /**
+     * Removes a [Song] from the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun removeSong(userId: Int, fileName: String): Response<Unit>
 
-    fun putTag(tagName: String, tag: Tag): Response<Tag?, E?>
+    /**
+     * Adds or updates [tag] to the library and, if [tag]'s [TagType] is new, it is added to the
+     * library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun putTag(userId: Int, tagName: String, tag: Tag): Response<Unit>
 
-    fun removeTag(tagName: String): Response<Tag?, E?>
+    /**
+     * Removes a [Tag] from the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun removeTag(userId: Int, tagName: String): Response<Unit>
 
-    fun putTagType(tagTypeName: String, tagType: TagType): Response<TagType?, E?>
+    /**
+     * Adds or updates [tagType] to the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun putTagType(userId: Int, tagTypeName: String, tagType: TagType): Response<Unit>
 
-    fun removeTagType(tagTypeName: String): Response<TagType?, E?>
+    /**
+     * Removes a [TagType] from the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun removeTagType(userId: Int, tagTypeName: String): Response<Unit>
 
-    fun putData(key: String, value: String): Response<String?, E?>
+    /**
+     * Adds or updates a data entry to the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun putData(userId: Int, key: String, value: String): Response<Unit>
 
-    fun removeData(key: String, value: String): Response<String?, E?>
+    /**
+     * Removes a data entry from the library.
+     * @param userId specifies which [User]'s library to use
+     */
+    fun removeData(userId: Int, key: String, value: String): Response<Unit>
+
+/* -------------------------------------------- Users ------------------------------------------- */
+
+    /** Retrieves credentials for a [User]. */
+    fun getUser(userId: Int): Response<User?>
+
+    /** Retrieves credentials for a [User]. */
+    fun getUser(username: String): Response<User?>
+
+    /** Retrieves credentials for all [User]s. */
+    fun getAllUsers(): Response<Set<User>>
+
+    /** Adds a new [User]. */
+    fun addUser(user: User, defaultTagType: TagType): Response<Unit>
+
+    /** Updates the username for a [User]. */
+    fun updateUserName(userId: Int, username: String): Response<Unit>
+
+    /** Updates the password salt and password hash for a [User]. */
+    fun updatePassword(userId: Int, salt: String, passHash: String): Response<Unit>
+
+    /** Removes all library data for a [User]. */
+    fun removeUser(userId: Int): Response<Unit>
 }

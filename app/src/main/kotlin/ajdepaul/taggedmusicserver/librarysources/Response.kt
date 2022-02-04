@@ -4,7 +4,6 @@
  */
 package ajdepaul.taggedmusicserver.librarysources
 
-data class Response<R, E>(val response: R, val error: E?) {
-    fun success() = error == null
-    fun fail() = error != null
+data class Response<R>(val result: R, val status: Status) {
+    enum class Status { SUCCESS, BAD_REQUEST, CONNECTION_ISSUE, TIME_OUT }
 }
