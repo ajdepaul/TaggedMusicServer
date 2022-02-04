@@ -1,7 +1,7 @@
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
 
     id 'org.jetbrains.kotlin.plugin.serialization' version "1.5.31"
 
@@ -17,6 +17,11 @@ repositories {
     mavenCentral()
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_18
+    targetCompatibility = JavaVersion.VERSION_18
+}
+
 dependencies {
     // Align versions of all Kotlin components
     implementation platform('org.jetbrains.kotlin:kotlin-bom')
@@ -28,13 +33,21 @@ dependencies {
     // https://mvnrepository.com/artifact/io.ktor/ktor-server-netty
     implementation 'io.ktor:ktor-server-netty:1.6.7'
     // https://mvnrepository.com/artifact/io.ktor/ktor-serialization
-    implementation "io.ktor:ktor-serialization:1.6.7"
+    implementation 'io.ktor:ktor-serialization:1.6.7'
+
+    // https://mvnrepository.com/artifact/io.ktor/ktor-auth
+    implementation "io.ktor:ktor-auth:1.6.7"
+    // https://mvnrepository.com/artifact/io.ktor/ktor-auth-jwt
+    implementation "io.ktor:ktor-auth-jwt:1.6.7"
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation "ch.qos.logback:logback-classic:1.2.8"
+    implementation 'ch.qos.logback:logback-classic:1.2.8'
 
     // https://mvnrepository.com/artifact/mysql/mysql-connector-java
     implementation 'mysql:mysql-connector-java:5.1.49'
+
+    // https://github.com/ToxicBakery/bcrypt-mpp
+    implementation 'com.ToxicBakery.library.bcrypt:bcrypt:+'
 
     // Use the Kotlin test library.
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
