@@ -12,10 +12,14 @@ import ajdepaul.taggedmusicserver.models.User
 /** The [LIBRARY_VERSION] indicates what format and features is expected. */
 const val LIBRARY_VERSION = "1.0"
 
-/** Used to retrieve data about users' libraries. */
+/**
+ * Used to retrieve data about users' libraries. Requests made with an invalid user id, may respond
+ * with either in either a [Response.Status.BAD_REQUEST] or a [Response.Status.SUCCESS] with a null
+ * or empty result.
+ */
 interface LibrarySource {
 
-    /* ----------------------------------------- Retrieving ----------------------------------------- */
+/* ----------------------------------------- Retrieving ----------------------------------------- */
 
     /** Retrieve the [LIBRARY_VERSION] of this [LibrarySource]. */
     fun getVersion(): Response<String>
@@ -132,14 +136,15 @@ interface LibrarySource {
     fun removeSong(userId: Int, fileName: String): Response<Unit>
 
     /**
-     * Adds or updates [tag] to the library and, if [tag]'s [TagType] is new, it is added to the
+     * Adds or updates [tag] to the library. If [tag]'s [TagType] is new, it is added to the
      * library.
      * @param userId specifies which [User]'s library to use
      */
     fun putTag(userId: Int, tagName: String, tag: Tag): Response<Unit>
 
     /**
-     * Removes a [Tag] from the library.
+     * Removes a [Tag] from the library. Any [Song]s in the library that have this [Tag] will have
+     * the [Tag] removed.
      * @param userId specifies which [User]'s library to use
      */
     fun removeTag(userId: Int, tagName: String): Response<Unit>
@@ -151,7 +156,8 @@ interface LibrarySource {
     fun putTagType(userId: Int, tagTypeName: String, tagType: TagType): Response<Unit>
 
     /**
-     * Removes a [TagType] from the library.
+     * Removes a [TagType] from the library. Any [Tag]s in the library that have this [TagType] will
+     * have their [TagType]s set to null.
      * @param userId specifies which [User]'s library to use
      */
     fun removeTagType(userId: Int, tagTypeName: String): Response<Unit>
@@ -166,7 +172,7 @@ interface LibrarySource {
      * Removes a data entry from the library.
      * @param userId specifies which [User]'s library to use
      */
-    fun removeData(userId: Int, key: String, value: String): Response<Unit>
+    fun removeData(userId: Int, key: String): Response<Unit>
 
 /* -------------------------------------------- Users ------------------------------------------- */
 

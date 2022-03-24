@@ -10,36 +10,38 @@ import ajdepaul.taggedmusicserver.models.Tag
 import ajdepaul.taggedmusicserver.models.TagType
 import ajdepaul.taggedmusicserver.models.User
 
+/** [LibrarySource] stored in memory *for development use only*. */
 class InMemoryLibrarySource : LibrarySource {
-
-    private data class Key(val userId: Int, val str: String)
 
     private var version = "1.0"
 
     private val users = mutableSetOf<User>()
-    private val songs = mutableMapOf<Key, Song>()
-    private val tags = mutableMapOf<Key, Tag>()
-    private val tagTypes = mutableMapOf<Key, TagType>()
-    private val data = mutableMapOf<Key, String>()
+    private fun MutableSet<User>.containsUser(userId: Int) = this.contains(User(userId, "", "", ""))
+
+    /** key: user id, value: song map that maps the file name to the [Song] */
+    private val songs = mutableMapOf<Int, MutableMap<String, Song>>()
+    /** key: user id, value: tag map that maps the tag name to the [Tag] */
+    private val tags = mutableMapOf<Int, MutableMap<String, Tag>>()
+    /** key: user id, value: tag type map that maps the tag type name to the [TagType] */
+    private val tagTypes = mutableMapOf<Int, MutableMap<String, TagType>>()
+    /** key: user id, value: the data map the maps the data key to the data string */
+    private val data = mutableMapOf<Int, MutableMap<String, String>>()
 
 /* ----------------------------------------- Retrieving ----------------------------------------- */
 
     override fun getVersion(): Response<String> = Response(version, Response.Status.SUCCESS)
 
     override fun getDefaultTagType(userId: Int): Response<TagType?> =
-        Response(tagTypes[Key(userId, "")], Response.Status.SUCCESS)
+        Response(tagTypes[userId]?.get(""), Response.Status.SUCCESS)
 
     override fun hasSong(userId: Int, fileName: String): Response<Boolean> =
-        Response(songs.contains(Key(userId, fileName)), Response.Status.SUCCESS)
+        Response(songs[userId]?.contains(fileName) ?: false, Response.Status.SUCCESS)
 
     override fun getSong(userId: Int, fileName: String): Response<Song?> =
-        Response(songs[Key(userId, fileName)], Response.Status.SUCCESS)
+        Response(songs[userId]?.get(fileName), Response.Status.SUCCESS)
 
     override fun getAllSongs(userId: Int): Response<Map<String, Song>> =
-        Response(
-            songs.filter { it.key.userId == userId }.mapKeys { it.key.str },
-            Response.Status.SUCCESS
-        )
+        Response(songs[userId]?.toMap() ?: mapOf(), Response.Status.SUCCESS)
 
     override fun getSongsByTags(
         userId: Int,
@@ -47,105 +49,135 @@ class InMemoryLibrarySource : LibrarySource {
         excludeTags: Set<String>
     ): Response<Map<String, Song>> =
         Response(
-            songs.filter { it.key.userId == userId }.mapKeys { it.key.str }
-                .filterByTags(includeTags, excludeTags),
+            songs[userId]?.filterByTags(includeTags, excludeTags) ?: mapOf(),
             Response.Status.SUCCESS
         )
 
     override fun hasTag(userId: Int, tagName: String): Response<Boolean> =
-        Response(tags.contains(Key(userId, tagName)), Response.Status.SUCCESS)
+        Response(tags[userId]?.contains(tagName) ?: false, Response.Status.SUCCESS)
 
     override fun getTag(userId: Int, tagName: String): Response<Tag?> =
-        Response(tags[Key(userId, tagName)], Response.Status.SUCCESS)
+        Response(tags[userId]?.get(tagName), Response.Status.SUCCESS)
 
     override fun getAllTags(userId: Int): Response<Map<String, Tag>> =
-        Response(
-            tags.filter { it.key.userId == userId }.mapKeys { it.key.str },
-            Response.Status.SUCCESS
-        )
+        Response(tags[userId] ?: mapOf(), Response.Status.SUCCESS)
 
     override fun hasTagType(userId: Int, tagTypeName: String): Response<Boolean> =
-        Response(tagTypes.contains(Key(userId, tagTypeName)), Response.Status.SUCCESS)
+        Response(tagTypes[userId]?.contains(tagTypeName) ?: false, Response.Status.SUCCESS)
 
     override fun getTagType(userId: Int, tagTypeName: String): Response<TagType?> =
-        Response(tagTypes[Key(userId, tagTypeName)], Response.Status.SUCCESS)
+        Response(tagTypes[userId]?.get(tagTypeName), Response.Status.SUCCESS)
 
     override fun getAllTagTypes(userId: Int): Response<Map<String, TagType>> =
-        Response(
-            tagTypes.filter { it.key.userId == userId }.mapKeys { it.key.str },
-            Response.Status.SUCCESS
-        )
+        Response(tagTypes[userId] ?: mapOf(), Response.Status.SUCCESS)
 
     override fun hasData(userId: Int, key: String): Response<Boolean> =
-        Response(data.contains(Key(userId, key)), Response.Status.SUCCESS)
+        Response(data[userId]?.contains(key) ?: false, Response.Status.SUCCESS)
 
     override fun getData(userId: Int, key: String): Response<String?> =
-        Response(data[Key(userId, key)], Response.Status.SUCCESS)
+        Response(data[userId]?.get(key), Response.Status.SUCCESS)
 
     override fun getAllData(userId: Int): Response<Map<String, String>> =
-        Response(
-            data.filter { it.key.userId == userId}.mapKeys { it.key.str },
-            Response.Status.SUCCESS
-        )
+        Response(data[userId] ?: mapOf(), Response.Status.SUCCESS)
 
 /* ------------------------------------------ Updating ------------------------------------------ */
 
     override fun setDefaultTagType(userId: Int, tagType: TagType): Response<Unit> {
-        tagTypes[Key(userId, "")] = tagType
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+        tagTypes[userId]!![""] = tagType
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun putSong(userId: Int, fileName: String, song: Song): Response<Unit> {
-        songs[Key(userId, fileName)] = song
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
 
-        val usersTags = tags.filterKeys { it.userId == userId }.mapKeys { it.key.str }
-        val tagsToAdd = song.tags.filterNot { tag -> usersTags.containsKey(tag) }
+        songs[userId]!![fileName] = song
 
-        tags.putAll(tagsToAdd.associate { Key(userId, it) to Tag(null) })
+        // add new tags
+        val tagsToAdd = song.tags.filterNot { tag -> tags[userId]!!.containsKey(tag) }
+        tags[userId]!!.putAll(tagsToAdd.associateWith { Tag(null) })
 
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun removeSong(userId: Int, fileName: String): Response<Unit> {
-        songs.remove(Key(userId, fileName))
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+        songs[userId]!!.remove(fileName)
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun putTag(userId: Int, tagName: String, tag: Tag): Response<Unit> {
-        tags[Key(userId, tagName)] = tag
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
 
-        if (tag.type != null && tagTypes.none { it.key.userId == userId && it.key.str == tagName }) {
-            val defaultTagType = tagTypes[Key(userId, "")]
-            if (defaultTagType != null) {
-                tagTypes[Key(userId, tag.type)] = defaultTagType
-            }
+        tags[userId]!![tagName] = tag
+
+        // add new tag type
+        if (tag.type != null && !tagTypes[userId]!!.keys.contains(tag.type)) {
+            tagTypes[userId]!![tag.type] = tagTypes[userId]!![""]!!
         }
 
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun removeTag(userId: Int, tagName: String): Response<Unit> {
-        tags.remove(Key(userId, tagName))
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+
+        tags[userId]!!.remove(tagName)
+
+        // remove tag from songs
+        for (entry in songs[userId]!!) {
+            val song = entry.value
+
+            if (song.tags.contains(tagName)) {
+                val newSong = Song(
+                    song.title,
+                    song.duration,
+                    song.trackNum,
+                    song.releaseDate,
+                    song.createDate,
+                    song.modifyDate,
+                    song.playCount,
+                    song.tags.filterNot { it == tagName }.toSet()
+                )
+
+                songs[userId]!![entry.key] = newSong
+            }
+        }
+
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun putTagType(userId: Int, tagTypeName: String, tagType: TagType): Response<Unit> {
-        tagTypes[Key(userId, tagTypeName)] = tagType
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+        tagTypes[userId]!![tagTypeName] = tagType
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun removeTagType(userId: Int, tagTypeName: String): Response<Unit> {
-        tagTypes.remove(Key(userId, tagTypeName))
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+
+        tagTypes[userId]!!.remove(tagTypeName)
+
+        // remove tag type from tags
+        for (entry in tags[userId]!!) {
+            val tag = entry.value
+            if (tag.type == tagTypeName) {
+                tags[userId]!![entry.key] = Tag(null, tag.description)
+            }
+        }
+
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun putData(userId: Int, key: String, value: String): Response<Unit> {
-        data[Key(userId, key)] = value
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+        data[userId]!![key] = value
         return Response(Unit, Response.Status.SUCCESS)
     }
 
-    override fun removeData(userId: Int, key: String, value: String): Response<Unit> {
-        data.remove(Key(userId, key))
+    override fun removeData(userId: Int, key: String): Response<Unit> {
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+        data[userId]!!.remove(key)
         return Response(Unit, Response.Status.SUCCESS)
     }
 
@@ -160,37 +192,43 @@ class InMemoryLibrarySource : LibrarySource {
     override fun getAllUsers(): Response<Set<User>> = Response(users.toSet(), Response.Status.SUCCESS)
 
     override fun addUser(user: User, defaultTagType: TagType): Response<Unit> {
+        if (users.containsUser(user.id)) return Response(Unit, Response.Status.BAD_REQUEST)
+
         users.add(user)
-        tagTypes[Key(user.id, "")] = defaultTagType
+        songs[user.id] = mutableMapOf()
+        tags[user.id] = mutableMapOf()
+        tagTypes[user.id] = mutableMapOf("" to defaultTagType)
+        data[user.id] = mutableMapOf()
+
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun updateUserName(userId: Int, username: String): Response<Unit> {
         val user = users.find { it.id == userId } ?: return Response(Unit, Response.Status.BAD_REQUEST)
+
         users.remove(user)
         users.add(User(userId, username, user.salt, user.passHash))
+
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun updatePassword(userId: Int, salt: String, passHash: String): Response<Unit> {
         val user = users.find { it.id == userId } ?: return Response(Unit, Response.Status.BAD_REQUEST)
+
         users.remove(user)
         users.add(User(userId, user.username, salt, passHash))
+
         return Response(Unit, Response.Status.SUCCESS)
     }
 
     override fun removeUser(userId: Int): Response<Unit> {
+        if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
+
         users.remove(User(userId, "", "", ""))
-
-        fun <E> MutableMap<Key, E>.removeAllForUser(userId: Int) {
-            val toRemove = this.filterKeys { it.userId == userId }.keys
-            for (k in toRemove) this.remove(k)
-        }
-
-        songs.removeAllForUser(userId)
-        tags.removeAllForUser(userId)
-        tagTypes.removeAllForUser(userId)
-        data.removeAllForUser(userId)
+        songs.remove(userId)
+        tags.remove(userId)
+        tagTypes.remove(userId)
+        data.remove(userId)
 
         return Response(Unit, Response.Status.SUCCESS)
     }

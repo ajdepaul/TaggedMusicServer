@@ -122,7 +122,7 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun removeData(userId: Int, key: String, value: String): Response<Unit> {
+    override fun removeData(userId: Int, key: String): Response<Unit> {
         TODO("Not yet implemented")
     }
 

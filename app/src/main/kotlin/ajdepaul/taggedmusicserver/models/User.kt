@@ -9,9 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class User(val id: Int, val username: String, val salt: String, val passHash: String) {
 
-    override fun hashCode(): Int {
-        return id
-    }
+    override fun hashCode(): Int = id
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
