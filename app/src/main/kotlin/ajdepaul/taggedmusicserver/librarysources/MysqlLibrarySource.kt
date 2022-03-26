@@ -7,8 +7,6 @@ package ajdepaul.taggedmusicserver.librarysources
 import ajdepaul.taggedmusicserver.models.Song
 import ajdepaul.taggedmusicserver.models.Tag
 import ajdepaul.taggedmusicserver.models.TagType
-import ajdepaul.taggedmusicserver.models.User
-import java.sql.*
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource
 import java.io.Closeable
 

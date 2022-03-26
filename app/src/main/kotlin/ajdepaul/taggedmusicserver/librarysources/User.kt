@@ -2,12 +2,9 @@
  * Copyright © 2021 Anthony DePaul
  * Licensed under the MIT License https://ajdepaul.mit-license.org/
  */
-package ajdepaul.taggedmusicserver.models
+package ajdepaul.taggedmusicserver.librarysources
 
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class User(val id: Int, val username: String, val salt: String, val passHash: String) {
+data class User(val id: Int, val username: String, val passHash: String) {
 
     override fun hashCode(): Int = id
 

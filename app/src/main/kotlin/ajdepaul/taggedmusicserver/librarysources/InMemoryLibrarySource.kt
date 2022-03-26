@@ -4,11 +4,9 @@
  */
 package ajdepaul.taggedmusicserver.librarysources
 
-import ajdepaul.taggedmusicserver.filterByTags
 import ajdepaul.taggedmusicserver.models.Song
 import ajdepaul.taggedmusicserver.models.Tag
 import ajdepaul.taggedmusicserver.models.TagType
-import ajdepaul.taggedmusicserver.models.User
 
 /** [LibrarySource] stored in memory *for development use only*. */
 class InMemoryLibrarySource : LibrarySource {
@@ -16,7 +14,7 @@ class InMemoryLibrarySource : LibrarySource {
     private var version = "1.0"
 
     private val users = mutableSetOf<User>()
-    private fun MutableSet<User>.containsUser(userId: Int) = this.contains(User(userId, "", "", ""))
+    private fun MutableSet<User>.containsUser(userId: Int) = this.contains(User(userId, "", ""))
 
     /** key: user id, value: song map that maps the file name to the [Song] */
     private val songs = mutableMapOf<Int, MutableMap<String, Song>>()
@@ -207,7 +205,7 @@ class InMemoryLibrarySource : LibrarySource {
         val user = users.find { it.id == userId } ?: return Response(Unit, Response.Status.BAD_REQUEST)
 
         users.remove(user)
-        users.add(User(userId, username, user.salt, user.passHash))
+        users.add(User(userId, username, user.passHash))
 
         return Response(Unit, Response.Status.SUCCESS)
     }
@@ -216,7 +214,7 @@ class InMemoryLibrarySource : LibrarySource {
         val user = users.find { it.id == userId } ?: return Response(Unit, Response.Status.BAD_REQUEST)
 
         users.remove(user)
-        users.add(User(userId, user.username, salt, passHash))
+        users.add(User(userId, user.username, passHash))
 
         return Response(Unit, Response.Status.SUCCESS)
     }
@@ -224,7 +222,7 @@ class InMemoryLibrarySource : LibrarySource {
     override fun removeUser(userId: Int): Response<Unit> {
         if (!users.containsUser(userId)) return Response(Unit, Response.Status.BAD_REQUEST)
 
-        users.remove(User(userId, "", "", ""))
+        users.remove(User(userId, "", ""))
         songs.remove(userId)
         tags.remove(userId)
         tagTypes.remove(userId)

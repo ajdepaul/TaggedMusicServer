@@ -7,7 +7,6 @@ package ajdepaul.taggedmusicserver.librarysources
 import ajdepaul.taggedmusicserver.models.Song
 import ajdepaul.taggedmusicserver.models.Tag
 import ajdepaul.taggedmusicserver.models.TagType
-import ajdepaul.taggedmusicserver.models.User
 import org.junit.Assert.*
 import org.junit.Test
 import java.time.LocalDateTime
@@ -89,9 +88,9 @@ class TestInMemoryLibrarySource {
         val librarySource = InMemoryLibrarySource()
 
         // users
-        librarySource.addUser(User(1, "usernameA", "salt1", "passHash1"), TagType(1))
-        librarySource.addUser(User(2, "usernameB", "salt2", "passHash2"), TagType(2))
-        librarySource.addUser(User(3, "usernameC", "salt3", "passHash3"), TagType(3))
+        librarySource.addUser(User(1, "usernameA", "passHash1"), TagType(1))
+        librarySource.addUser(User(2, "usernameB", "passHash2"), TagType(2))
+        librarySource.addUser(User(3, "usernameC", "passHash3"), TagType(3))
 
         // data
         librarySource.putData(1, "data0", "value1")
@@ -867,7 +866,6 @@ class TestInMemoryLibrarySource {
 
         assertEquals(1, user1.id)
         assertEquals("usernameA", user1.username)
-        assertEquals("salt1", user1.salt)
         assertEquals("passHash1", user1.passHash)
 
         val user2 = librarySource.getUser(2).let { response ->
@@ -877,7 +875,6 @@ class TestInMemoryLibrarySource {
 
         assertEquals(2, user2.id)
         assertEquals("usernameB", user2.username)
-        assertEquals("salt2", user2.salt)
         assertEquals("passHash2", user2.passHash)
 
         val user3 = librarySource.getUser(3).let { response ->
@@ -887,7 +884,6 @@ class TestInMemoryLibrarySource {
 
         assertEquals(3, user3.id)
         assertEquals("usernameC", user3.username)
-        assertEquals("salt3", user3.salt)
         assertEquals("passHash3", user3.passHash)
     }
 
@@ -902,7 +898,6 @@ class TestInMemoryLibrarySource {
 
         assertEquals(1, user1.id)
         assertEquals("usernameA", user1.username)
-        assertEquals("salt1", user1.salt)
         assertEquals("passHash1", user1.passHash)
 
         val user2 = librarySource.getUser("usernameB").let { response ->
@@ -912,7 +907,6 @@ class TestInMemoryLibrarySource {
 
         assertEquals(2, user2.id)
         assertEquals("usernameB", user2.username)
-        assertEquals("salt2", user2.salt)
         assertEquals("passHash2", user2.passHash)
 
         val user3 = librarySource.getUser("usernameC").let { response ->
@@ -922,7 +916,6 @@ class TestInMemoryLibrarySource {
 
         assertEquals(3, user3.id)
         assertEquals("usernameC", user3.username)
-        assertEquals("salt3", user3.salt)
         assertEquals("passHash3", user3.passHash)
     }
 
@@ -932,7 +925,7 @@ class TestInMemoryLibrarySource {
 
         val users = librarySource.getAllUsers().let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
-            response.result!!
+            response.result
         }
 
         assertEquals(3, users.size)
@@ -940,19 +933,16 @@ class TestInMemoryLibrarySource {
         val user1 = users.find { it.id == 1 }!!
         assertEquals(1, user1.id)
         assertEquals("usernameA", user1.username)
-        assertEquals("salt1", user1.salt)
         assertEquals("passHash1", user1.passHash)
 
         val user2 = users.find { it.id == 2 }!!
         assertEquals(2, user2.id)
         assertEquals("usernameB", user2.username)
-        assertEquals("salt2", user2.salt)
         assertEquals("passHash2", user2.passHash)
 
         val user3 = users.find { it.id == 3 }!!
         assertEquals(3, user3.id)
         assertEquals("usernameC", user3.username)
-        assertEquals("salt3", user3.salt)
         assertEquals("passHash3", user3.passHash)
     }
 
@@ -962,18 +952,17 @@ class TestInMemoryLibrarySource {
 
         assertEquals(
             Response.Status.BAD_REQUEST,
-            librarySource.addUser(User(1, "usernameE", "salt5", "passHash5"), TagType(5)).status
+            librarySource.addUser(User(1, "usernameE", "passHash5"), TagType(5)).status
         )
 
         assertEquals(
             Response.Status.SUCCESS,
-            librarySource.addUser(User(4, "usernameD", "salt4", "passHash4"), TagType(4)).status
+            librarySource.addUser(User(4, "usernameD", "passHash4"), TagType(4)).status
         )
 
         val user4 = librarySource.getAllUsers().result.find { it.id == 4 }!!
         assertEquals(4, user4.id)
         assertEquals("usernameD", user4.username)
-        assertEquals("salt4", user4.salt)
         assertEquals("passHash4", user4.passHash)
 
         assertEquals(TagType(4), librarySource.getDefaultTagType(4).result)
@@ -1017,9 +1006,7 @@ class TestInMemoryLibrarySource {
             librarySource.updatePassword(1, "salt4", "passHash4").status
         )
 
-        assertEquals("salt4", librarySource.getUser(1).result!!.salt)
         assertEquals("passHash4", librarySource.getUser(1).result!!.passHash)
-        assertEquals("salt4", librarySource.getAllUsers().result.find { it.id == 1 }!!.salt)
         assertEquals(
             "passHash4",
             librarySource.getAllUsers().result.find { it.id == 1 }!!.passHash

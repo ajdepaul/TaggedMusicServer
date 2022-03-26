@@ -2,6 +2,7 @@
 /build
 /app/build
 /mysql_init
+/audio/*
 
 .idea
 *.iml

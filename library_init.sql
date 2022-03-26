@@ -1,3 +1,4 @@
+
 /*
  * Copyright © 2021 Anthony DePaul
  * Licensed under the MIT License https://ajdepaul.mit-license.org/
@@ -13,8 +14,7 @@ INSERT INTO Library(version) VALUES ('1.0');
 CREATE TABLE Users (
     user_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
-    salt VARCHAR(16) NOT NULL,
-    pass_hash VARCHAR(44) NOT NULL
+    pass_hash VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE Songs (
@@ -239,25 +239,25 @@ END &&
 
 /* --------------------------------------- User Procedures -------------------------------------- */
 
--- Result: the user's id, username, salt, and password hash.
+-- Result: the user's id, username, and password.
 CREATE PROCEDURE Users_select_id(arg_user_id INT) BEGIN
     SELECT * FROM Users WHERE user_id = arg_user_id;
 END &&
 
--- Result: the user's id, username, salt, and password hash.
+-- Result: the user's id, username, and password.
 CREATE PROCEDURE Users_select_username(arg_username VARCHAR(255)) BEGIN
     SELECT * FROM Users WHERE username = arg_username;
 END &&
 
--- Result: every users' id, username, salt, and password hash.
+-- Result: every users' id, username, and password.
 CREATE PROCEDURE Users_select_all() BEGIN
     SELECT * FROM Users;
 END &&
 
 -- Inserts a new user.
-CREATE PROCEDURE Users_add(arg_username VARCHAR(255), arg_salt VARCHAR(16), arg_pass_hash VARCHAR(44), arg_default_tag_type_color INT) BEGIN
-    INSERT INTO Users(username, salt, pass_hash)
-    VALUES (arg_username, arg_salt, arg_pass_hash);
+CREATE PROCEDURE Users_add(arg_username VARCHAR(255), arg_pass_hash VARCHAR(255), arg_default_tag_type_color INT) BEGIN
+    INSERT INTO Users(username, pass_hash)
+    VALUES (arg_username, pass_hash);
 
     INSERT INTO TagTypes(user_id, name, color)
     SELECT user_id, '' as name, arg_default_tag_type_color as color FROM Users WHERE username = arg_username;
@@ -269,8 +269,8 @@ CREATE PROCEDURE Users_update_username(arg_user_id INT, new_username VARCHAR(255
 END &&
 
 -- Updates a user's password.
-CREATE PROCEDURE Users_update_password(arg_user_id INT, new_salt VARCHAR(16), new_pass_hash VARCHAR(44)) BEGIN
-    UPDATE Users SET salt = new_salt, pass_hash = new_pass_hash WHERE user_id = arg_user_id;
+CREATE PROCEDURE Users_update_password(arg_user_id INT, arg_pass_hash VARCHAR(255)) BEGIN
+    UPDATE Users SET pass_hash = arg_pass_hash WHERE user_id = arg_user_id;
 END &&
 
 -- Removes all user data from every table.
