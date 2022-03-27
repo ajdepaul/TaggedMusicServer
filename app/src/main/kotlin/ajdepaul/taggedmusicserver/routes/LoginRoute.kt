@@ -15,11 +15,21 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 
 /** Route for creating JSON web tokens. */
 fun Route.loginRouting(secret: String, librarySource: LibrarySource) {
+
+    /* Used to retrieve a JSON web token according to user credentials. */
     post("/login") {
-        val credentials = call.receive<Credentials>()
+
+        // check json format
+        val credentials = try {
+            call.receive<Credentials>()
+        } catch (e: SerializationException) {
+            return@post call.respondText("Malformed JSON", status = HttpStatusCode.BadRequest)
+        }
 
         val userResponse = librarySource.getUser(credentials.username)
 
@@ -40,10 +50,13 @@ fun Route.loginRouting(secret: String, librarySource: LibrarySource) {
             return@post call.respondText("Bad login", status = HttpStatusCode.Unauthorized)
         }
 
+        // create jwt
         val token = JWT.create()
             .withClaim("id", user.id)
             .sign(Algorithm.HMAC256(secret))
 
-        call.respond(hashMapOf("token" to token))
+        @Serializable
+        data class Response(val token: String, val id: Int)
+        call.respond(Response(token, user.id))
     }
 }
