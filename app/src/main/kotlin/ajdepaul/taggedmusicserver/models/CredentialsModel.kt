@@ -7,6 +7,4 @@ package ajdepaul.taggedmusicserver.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TagType(
-    val color: Int
-)
+data class CredentialsModel(val username: String, val password: String)

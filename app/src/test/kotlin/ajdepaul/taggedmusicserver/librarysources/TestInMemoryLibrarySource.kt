@@ -4,9 +4,6 @@
  */
 package ajdepaul.taggedmusicserver.librarysources
 
-import ajdepaul.taggedmusicserver.models.Song
-import ajdepaul.taggedmusicserver.models.Tag
-import ajdepaul.taggedmusicserver.models.TagType
 import org.junit.Assert.*
 import org.junit.Test
 import java.time.LocalDateTime
@@ -1011,6 +1008,11 @@ class TestInMemoryLibrarySource {
             "passHash4",
             librarySource.getAllUsers().result.find { it.id == 1 }!!.passHash
         )
+    }
+
+    @Test
+    fun testUpdatePrivileges() {
+        TODO("To be implemented")
     }
 
     @Test

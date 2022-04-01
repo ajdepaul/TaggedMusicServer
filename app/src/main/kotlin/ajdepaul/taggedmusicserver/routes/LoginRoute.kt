@@ -6,7 +6,7 @@ package ajdepaul.taggedmusicserver.routes
 
 import ajdepaul.taggedmusicserver.librarysources.LibrarySource
 import ajdepaul.taggedmusicserver.librarysources.Response
-import ajdepaul.taggedmusicserver.models.Credentials
+import ajdepaul.taggedmusicserver.models.CredentialsModel
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.toxicbakery.bcrypt.Bcrypt
@@ -26,33 +26,50 @@ fun Route.loginRouting(secret: String, librarySource: LibrarySource) {
 
         // check json format
         val credentials = try {
-            call.receive<Credentials>()
+            call.receive<CredentialsModel>()
         } catch (e: SerializationException) {
             return@post call.respondText("Malformed JSON", status = HttpStatusCode.BadRequest)
         }
 
-        val userResponse = librarySource.getUser(credentials.username)
+        // get id
+        val user = librarySource.getUser(credentials.username).let { response ->
 
-        // check library source response
-        if (userResponse.status != Response.Status.SUCCESS) {
-            return@post call.respondText(
-                "Could not check credentials",
-                status = HttpStatusCode.BadGateway
-            )
+            // check library source response
+            if (response.status != Response.Status.SUCCESS) {
+                return@post call.respondText(
+                    "Could not check credentials",
+                    status = HttpStatusCode.BadGateway
+                )
+            }
+
+            response.result
+                ?: return@post call.respondText("Bad login", status = HttpStatusCode.Unauthorized)
         }
 
-        // check username
-        val user = userResponse.result
-            ?: return@post call.respondText("Bad login", status = HttpStatusCode.Unauthorized)
+        // get password hash
+        val userPassHash = librarySource.getPassHash(user.id).let { response ->
+
+            // check library source response
+            if (response.status != Response.Status.SUCCESS) {
+                return@post call.respondText(
+                    "Could not check credentials",
+                    status = HttpStatusCode.BadGateway
+                )
+            }
+
+            // errors out if the id retrieved no longer points to a user
+            response.result ?: return@post call.respond(HttpStatusCode.InternalServerError)
+        }
 
         // check password
-        if (!Bcrypt.verify(credentials.password, user.passHash.toByteArray())) {
+        if (!Bcrypt.verify(credentials.password, userPassHash.toByteArray())) {
             return@post call.respondText("Bad login", status = HttpStatusCode.Unauthorized)
         }
 
         // create jwt
         val token = JWT.create()
             .withClaim("id", user.id)
+            .withClaim("admin", user.admin)
             .sign(Algorithm.HMAC256(secret))
 
         @Serializable

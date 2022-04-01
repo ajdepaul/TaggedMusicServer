@@ -1,7 +1,3 @@
-/*
- * Copyright © 2021 Anthony DePaul
- * Licensed under the MIT License https://ajdepaul.mit-license.org/
- */
 package ajdepaul.taggedmusicserver.models
 
 import ajdepaul.taggedmusicserver.models.serializers.LocalDateTimeSerializer
@@ -9,7 +5,9 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
 @Serializable
-data class Song(
+data class SongModel(
+    val id: Int,
+    val fileName: String,
     val title: String,
     val duration: Int,
     val trackNum: Int? = null,
@@ -21,4 +19,10 @@ data class Song(
     val modifyDate: LocalDateTime = LocalDateTime.now(),
     val playCount: Int = 0,
     val tags: Set<String> = setOf()
-)
+) {
+    override fun hashCode(): Int = id.hashCode()
+    override fun equals(other: Any?): Boolean {
+        return if (other !is SongModel) false
+        else id == other.id
+    }
+}

@@ -14,11 +14,13 @@ INSERT INTO Library(version) VALUES ('1.0');
 CREATE TABLE Users (
     user_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
-    pass_hash VARCHAR(255) NOT NULL
+    pass_hash VARCHAR(255) NOT NULL,
+    is_admin BOOLEAN NOT NULL
 );
 
 CREATE TABLE Songs (
     user_id INT NOT NULL,
+    song_id INT AUTO_INCREMENT NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     duration INT NOT NULL,
@@ -27,8 +29,9 @@ CREATE TABLE Songs (
     create_date DATETIME(3) NOT NULL,
     modify_date DATETIME(3) NOT NULL,
     play_count INT NOT NULL,
-    PRIMARY KEY(user_id, file_name),
-    FOREIGN KEY(user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+    PRIMARY KEY(user_id, song_id),
+    FOREIGN KEY(user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    INDEX(song_id)
 );
 
 CREATE TABLE TagTypes (
@@ -52,12 +55,12 @@ CREATE TABLE Tags (
 
 CREATE TABLE SongHasTag (
     user_id INT NOT NULL,
-    song_file VARCHAR(255) NOT NULL,
+    song_id INT NOT NULL,
     tag VARCHAR(255) NOT NULL,
-    PRIMARY KEY(user_id, song_file, tag),
+    PRIMARY KEY(user_id, song_id, tag),
     FOREIGN KEY(user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY(user_id, tag) REFERENCES Tags(user_id, name) ON DELETE CASCADE,
-    FOREIGN KEY(user_id, song_file) REFERENCES Songs(user_id, file_name) ON DELETE CASCADE
+    FOREIGN KEY(user_id, song_id) REFERENCES Songs(user_id, song_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Data (
@@ -77,9 +80,9 @@ CREATE PROCEDURE Library_get_version() BEGIN
     SELECT version FROM Library;
 END &&
 
--- Result: the `file_name` song.
-CREATE PROCEDURE Songs_select(arg_user_id INT, arg_file_name VARCHAR(255)) BEGIN
-    SELECT * FROM Songs WHERE user_id = arg_user_id AND file_name = arg_file_name;
+-- Result: the `song_id` song.
+CREATE PROCEDURE Songs_select(arg_user_id INT, arg_song_id INT) BEGIN
+    SELECT * FROM Songs WHERE user_id = arg_user_id AND song_id = arg_song_id;
 END &&
 
 -- Result: all the songs.
@@ -112,9 +115,9 @@ CREATE PROCEDURE TagTypes_select_all(arg_user_id INT) BEGIN
     SELECT * FROM TagTypes WHERE user_id = arg_user_id AND name <> '';
 END &&
 
--- Result: all the tags that `file_name` song has.
-CREATE PROCEDURE SongHasTag_select_song_tags(arg_user_id INT, arg_song_file VARCHAR(255)) BEGIN
-    SELECT * FROM SongHasTag WHERE user_id = arg_user_id AND song_file = arg_song_file;
+-- Result: all the tags that `song_id` song has.
+CREATE PROCEDURE SongHasTag_select_song_tags(arg_user_id INT, arg_song_id INT) BEGIN
+    SELECT * FROM SongHasTag WHERE user_id = arg_user_id AND song_id = arg_song_id;
 END &&
 
 -- Result: all song has tags relationships.
@@ -171,6 +174,7 @@ CREATE PROCEDURE Songs_put(
     )
     ON DUPLICATE KEY UPDATE
         user_id = arg_user_id,
+        file_name = arg_file_name,
         title = arg_title,
         duration = arg_duration,
         track_num = arg_track_num,
@@ -181,8 +185,8 @@ CREATE PROCEDURE Songs_put(
 END &&
 
 -- Removes a song.
-CREATE PROCEDURE Songs_remove(arg_user_id INT, arg_file_name VARCHAR(255)) BEGIN
-    DELETE FROM Songs WHERE user_id = arg_user_id AND file_name = arg_file_name;
+CREATE PROCEDURE Songs_remove(arg_user_id INT, arg_song_id VARCHAR(255)) BEGIN
+    DELETE FROM Songs WHERE user_id = arg_user_id AND song_id = arg_song_id;
 END &&
 
 -- Inserts/updates a tag.
@@ -211,18 +215,18 @@ CREATE PROCEDURE TagTypes_remove(arg_user_id INT, arg_name VARCHAR(255)) BEGIN
 END &&
 
 -- Inserts a new song has tag relationship.
-CREATE PROCEDURE SongHasTag_put(arg_user_id INT, arg_song_file VARCHAR(255), arg_tag VARCHAR(255)) BEGIN
-    INSERT INTO SongHasTag(user_id, song_file, tag) VALUES (arg_user_id, arg_song_file, arg_tag);
+CREATE PROCEDURE SongHasTag_put(arg_user_id INT, arg_song_id VARCHAR(255), arg_tag VARCHAR(255)) BEGIN
+    INSERT INTO SongHasTag(user_id, song_id, tag) VALUES (arg_user_id, arg_song_id, arg_tag);
 END &&
 
 -- Removes a song has tag relationship.
-CREATE PROCEDURE SongHasTag_remove(arg_user_id INT, arg_song_file VARCHAR(255), arg_tag VARCHAR(255)) BEGIN
-    DELETE FROM SongHasTag WHERE user_id = arg_user_id AND song_file = arg_song_file AND tag = arg_tag;
+CREATE PROCEDURE SongHasTag_remove(arg_user_id INT, arg_song_id VARCHAR(255), arg_tag VARCHAR(255)) BEGIN
+    DELETE FROM SongHasTag WHERE user_id = arg_user_id AND song_id = arg_song_id AND tag = arg_tag;
 END &&
 
 -- Removes all song has tag relationships for a song.
-CREATE PROCEDURE SongHasTag_remove_all_for_song(arg_user_id INT, arg_song_file VARCHAR(255)) BEGIN
-    DELETE FROM SongHasTag WHERE user_id = arg_user_id AND song_file = arg_song_file;
+CREATE PROCEDURE SongHasTag_remove_all_for_song(arg_user_id INT, arg_song_id VARCHAR(255)) BEGIN
+    DELETE FROM SongHasTag WHERE user_id = arg_user_id AND song_id = arg_song_id;
 END &&
 
 -- Inserts/updates a data entry.
@@ -255,9 +259,9 @@ CREATE PROCEDURE Users_select_all() BEGIN
 END &&
 
 -- Inserts a new user.
-CREATE PROCEDURE Users_add(arg_username VARCHAR(255), arg_pass_hash VARCHAR(255), arg_default_tag_type_color INT) BEGIN
-    INSERT INTO Users(username, pass_hash)
-    VALUES (arg_username, pass_hash);
+CREATE PROCEDURE Users_add(arg_username VARCHAR(255), arg_pass_hash VARCHAR(255), arg_is_admin BOOLEAN, arg_default_tag_type_color INT) BEGIN
+    INSERT INTO Users(username, pass_hash, is_admin)
+    VALUES (arg_username, arg_pass_hash, arg_is_admin);
 
     INSERT INTO TagTypes(user_id, name, color)
     SELECT user_id, '' as name, arg_default_tag_type_color as color FROM Users WHERE username = arg_username;
@@ -271,6 +275,11 @@ END &&
 -- Updates a user's password.
 CREATE PROCEDURE Users_update_password(arg_user_id INT, arg_pass_hash VARCHAR(255)) BEGIN
     UPDATE Users SET pass_hash = arg_pass_hash WHERE user_id = arg_user_id;
+END &&
+
+-- Updates a user's privileges.
+CREATE PROCEDURE Users_update_privileges(arg_user_id INT, arg_is_admin BOOLEAN) BEGIN
+    UPDATE Users SET is_admin = arg_is_admin WHERE user_id = arg_user_id;
 END &&
 
 -- Removes all user data from every table.

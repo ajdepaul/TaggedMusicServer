@@ -4,11 +4,9 @@
  */
 package ajdepaul.taggedmusicserver
 
-import ajdepaul.taggedmusicserver.librarysources.MysqlLibrarySource
-import ajdepaul.taggedmusicserver.librarysources.InMemoryLibrarySource
-import ajdepaul.taggedmusicserver.librarysources.LibrarySource
+import ajdepaul.taggedmusicserver.librarysources.*
+import ajdepaul.taggedmusicserver.librarysources.TagType
 import ajdepaul.taggedmusicserver.librarysources.User
-import ajdepaul.taggedmusicserver.models.TagType
 import ajdepaul.taggedmusicserver.routes.audioRouting
 import ajdepaul.taggedmusicserver.routes.loginRouting
 import ajdepaul.taggedmusicserver.routes.songRouting
@@ -24,6 +22,9 @@ import io.ktor.routing.*
 import io.ktor.serialization.*
 import kotlin.system.exitProcess
 
+/** The expected library source version. */
+const val LIBRARY_SOURCE_VERSION = "1.0"
+
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 fun Application.module() {
@@ -32,7 +33,22 @@ fun Application.module() {
 
     val librarySource: LibrarySource =
         if (!developmentMode) createMysqlLibrarySource()
-        else createTestLibrarySource(saltRounds)
+        else {
+            log.info("Development mode enabled. Using in-memory library source.")
+            createTestLibrarySource(saltRounds)
+        }
+
+    // check library source version
+    with(librarySource.getVersion()) {
+        if (status != Response.Status.SUCCESS) {
+            log.error("Could not receive library version.")
+            exitProcess(-1)
+        }
+        else if (result != LIBRARY_SOURCE_VERSION) {
+            log.error("Could not receive library version.")
+            exitProcess(-1)
+        }
+    }
 
     // load jwt secret
     val configSecret = environment.config.propertyOrNull("jwt.secret")?.getString()
@@ -50,6 +66,8 @@ fun Application.module() {
             "secret"
         }
     }
+
+    install(AutoHeadResponse)
 
     install(ContentNegotiation) {
         json()

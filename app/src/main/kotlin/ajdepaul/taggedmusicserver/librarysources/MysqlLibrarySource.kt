@@ -4,9 +4,7 @@
  */
 package ajdepaul.taggedmusicserver.librarysources
 
-import ajdepaul.taggedmusicserver.models.Song
-import ajdepaul.taggedmusicserver.models.Tag
-import ajdepaul.taggedmusicserver.models.TagType
+import ajdepaul.taggedmusicserver.models.*
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource
 import java.io.Closeable
 
@@ -22,23 +20,24 @@ class MysqlLibrarySource(
 
 /* ----------------------------------------- Retrieving ----------------------------------------- */
 
+
     override fun getVersion(): Response<String> {
         TODO("Not yet implemented")
     }
 
-    override fun getDefaultTagType(userId: Int): Response<TagType?> {
+    override fun getDefaultTagType(userId: Int): Response<TagTypeModel?> {
         TODO("Not yet implemented")
     }
 
-    override fun hasSong(userId: Int, fileName: String): Response<Boolean> {
+    override fun hasSong(userId: Int, songId: Int): Response<Boolean> {
         TODO("Not yet implemented")
     }
 
-    override fun getSong(userId: Int, fileName: String): Response<Song?> {
+    override fun getSong(userId: Int, songId: Int): Response<SongModel?> {
         TODO("Not yet implemented")
     }
 
-    override fun getAllSongs(userId: Int): Response<Map<String, Song>> {
+    override fun getAllSongs(userId: Int): Response<Set<SongModel>> {
         TODO("Not yet implemented")
     }
 
@@ -46,7 +45,7 @@ class MysqlLibrarySource(
         userId: Int,
         includeTags: Set<String>,
         excludeTags: Set<String>
-    ): Response<Map<String, Song>> {
+    ): Response<Set<SongModel>> {
         TODO("Not yet implemented")
     }
 
@@ -54,11 +53,11 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun getTag(userId: Int, tagName: String): Response<Tag?> {
+    override fun getTag(userId: Int, tagName: String): Response<TagModel?> {
         TODO("Not yet implemented")
     }
 
-    override fun getAllTags(userId: Int): Response<Map<String, Tag>> {
+    override fun getAllTags(userId: Int): Response<Set<TagModel>> {
         TODO("Not yet implemented")
     }
 
@@ -66,11 +65,11 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun getTagType(userId: Int, tagTypeName: String): Response<TagType?> {
+    override fun getTagType(userId: Int, tagTypeName: String): Response<TagTypeModel?> {
         TODO("Not yet implemented")
     }
 
-    override fun getAllTagTypes(userId: Int): Response<Map<String, TagType>> {
+    override fun getAllTagTypes(userId: Int): Response<Set<TagTypeModel>> {
         TODO("Not yet implemented")
     }
 
@@ -78,29 +77,29 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun getData(userId: Int, key: String): Response<String?> {
+    override fun getData(userId: Int, key: String): Response<DataEntryModel?> {
         TODO("Not yet implemented")
     }
 
-    override fun getAllData(userId: Int): Response<Map<String, String>> {
+    override fun getAllData(userId: Int): Response<Set<DataEntryModel>> {
         TODO("Not yet implemented")
     }
 
 /* ------------------------------------------ Updating ------------------------------------------ */
 
-    override fun setDefaultTagType(userId: Int, tagType: TagType): Response<Unit> {
+    override fun setDefaultTagType(userId: Int, tagType: TagTypeModel): Response<Unit> {
         TODO("Not yet implemented")
     }
 
-    override fun putSong(userId: Int, fileName: String, song: Song): Response<Unit> {
+    override fun putSong(userId: Int, song: SongModel): Response<Unit> {
         TODO("Not yet implemented")
     }
 
-    override fun removeSong(userId: Int, fileName: String): Response<Unit> {
+    override fun removeSong(userId: Int, songId: Int): Response<Unit> {
         TODO("Not yet implemented")
     }
 
-    override fun putTag(userId: Int, tagName: String, tag: Tag): Response<Unit> {
+    override fun putTag(userId: Int, tag: TagModel): Response<Unit> {
         TODO("Not yet implemented")
     }
 
@@ -108,7 +107,7 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun putTagType(userId: Int, tagTypeName: String, tagType: TagType): Response<Unit> {
+    override fun putTagType(userId: Int, tagType: TagTypeModel): Response<Unit> {
         TODO("Not yet implemented")
     }
 
@@ -116,7 +115,7 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun putData(userId: Int, key: String, value: String): Response<Unit> {
+    override fun putData(userId: Int, dataEntry: DataEntryModel): Response<Unit> {
         TODO("Not yet implemented")
     }
 
@@ -124,19 +123,25 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun getUser(userId: Int): Response<User?> {
+/* -------------------------------------------- Users ------------------------------------------- */
+
+    override fun getUser(userId: Int): Response<UserModel?> {
         TODO("Not yet implemented")
     }
 
-    override fun getUser(username: String): Response<User?> {
+    override fun getUser(username: String): Response<UserModel?> {
         TODO("Not yet implemented")
     }
 
-    override fun getAllUsers(): Response<Set<User>> {
+    override fun getAllUsers(): Response<Set<UserModel>> {
         TODO("Not yet implemented")
     }
 
-    override fun addUser(user: User, defaultTagType: TagType): Response<Unit> {
+    override fun getPassHash(userId: Int): Response<String?> {
+        TODO("Not yet implemented")
+    }
+
+    override fun addUser(user: UserModel, passHash: String, defaultTagType: TagTypeModel): Response<Unit> {
         TODO("Not yet implemented")
     }
 
@@ -144,13 +149,18 @@ class MysqlLibrarySource(
         TODO("Not yet implemented")
     }
 
-    override fun updatePassword(userId: Int, salt: String, passHash: String): Response<Unit> {
+    override fun updatePassword(userId: Int, passHash: String): Response<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override fun updatePrivileges(userId: Int, admin: Boolean): Response<Unit> {
         TODO("Not yet implemented")
     }
 
     override fun removeUser(userId: Int): Response<Unit> {
         TODO("Not yet implemented")
     }
+
 
 ///* ------------------------------------- Callable Statements ------------------------------------ */
 //
