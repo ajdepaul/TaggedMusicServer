@@ -4,6 +4,10 @@
  */
 package ajdepaul.taggedmusicserver.librarysources
 
+import ajdepaul.taggedmusicserver.models.SongModel
+import ajdepaul.taggedmusicserver.models.TagModel
+import ajdepaul.taggedmusicserver.models.TagTypeModel
+import ajdepaul.taggedmusicserver.models.UserModel
 import org.junit.Assert.*
 import org.junit.Test
 import java.time.LocalDateTime
@@ -11,15 +15,15 @@ import java.time.LocalDateTime
 class TestInMemoryLibrarySource {
 
     // test tags
-    private val tag1 = Tag("tagType0", null)
-    private val tag2 = Tag("tagType0", null)
-    private val tag3 = Tag("tagType0", null)
-    private val tag4 = Tag(null, "description1")
-    private val tag5 = Tag(null, "description2")
-    private val tag6 = Tag(null, "description3")
+    private val tag0 = TagModel("tag0", "tagType0", null)
+    private val tag1 = TagModel("tag1", null, "description1")
+    private val tag2 = TagModel("tag2", null, "description2")
+    private val tag3 = TagModel("tag3", null, "description3")
 
     // test songs
-    private val song1 = Song(
+    private val song01 = SongModel(
+        1,
+        "song01.mp3",
         "title1",
         1,
         1,
@@ -29,7 +33,9 @@ class TestInMemoryLibrarySource {
         1,
         setOf("tag0")
     )
-    private val song2 = Song(
+    private val song2 = SongModel(
+        2,
+        "song2.mp3",
         "title2",
         2,
         2,
@@ -39,7 +45,9 @@ class TestInMemoryLibrarySource {
         2,
         setOf("tag0")
     )
-    private val song3 = Song(
+    private val song3 = SongModel(
+        3,
+        "song3.mp3",
         "title3",
         3,
         3,
@@ -49,7 +57,9 @@ class TestInMemoryLibrarySource {
         3,
         setOf("tag0")
     )
-    private val song4 = Song(
+    private val song4 = SongModel(
+        4,
+        "song4.mp3",
         "title4",
         4,
         null,
@@ -59,7 +69,9 @@ class TestInMemoryLibrarySource {
         4,
         setOf("tag0", "tag1")
     )
-    private val song5 = Song(
+    private val song5 = SongModel(
+        5,
+        "song5.mp3",
         "title5",
         5,
         null,
@@ -69,7 +81,9 @@ class TestInMemoryLibrarySource {
         5,
         setOf("tag0", "tag2")
     )
-    private val song6 = Song(
+    private val song6 = SongModel(
+        6,
+        "song6.mp3",
         "title6",
         6,
         null,
@@ -85,9 +99,9 @@ class TestInMemoryLibrarySource {
         val librarySource = InMemoryLibrarySource()
 
         // users
-        librarySource.addUser(User(1, "usernameA", "passHash1"), TagType(1))
-        librarySource.addUser(User(2, "usernameB", "passHash2"), TagType(2))
-        librarySource.addUser(User(3, "usernameC", "passHash3"), TagType(3))
+        librarySource.addUser(UserModel(1, "usernameA", false), "passHash1", TagTypeModel("", 1))
+        librarySource.addUser(UserModel(2, "usernameB", true), "passHash2", TagTypeModel("", 2))
+        librarySource.addUser(UserModel(3, "usernameC", false), "passHash3", TagTypeModel("", 3))
 
         // data
         librarySource.putData(1, "data0", "value1")
@@ -108,13 +122,13 @@ class TestInMemoryLibrarySource {
         librarySource.putTagType(3, "tagType3", TagType(6))
 
         // tags
-        librarySource.putTag(1, "tag0", tag1)
-        librarySource.putTag(2, "tag0", tag2)
-        librarySource.putTag(3, "tag0", tag3)
+        librarySource.putTag(1, tag0)
+        librarySource.putTag(2, tag0)
+        librarySource.putTag(3, tag0)
 
-        librarySource.putTag(1, "tag1", tag4)
-        librarySource.putTag(2, "tag2", tag5)
-        librarySource.putTag(3, "tag3", tag6)
+        librarySource.putTag(1, tag1)
+        librarySource.putTag(2, tag2)
+        librarySource.putTag(3, tag3)
 
         // songs
         librarySource.putSong(1, "fileName0.mp3", song1)

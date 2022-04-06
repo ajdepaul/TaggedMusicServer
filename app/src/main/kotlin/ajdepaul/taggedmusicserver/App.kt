@@ -5,8 +5,8 @@
 package ajdepaul.taggedmusicserver
 
 import ajdepaul.taggedmusicserver.librarysources.*
-import ajdepaul.taggedmusicserver.librarysources.TagType
-import ajdepaul.taggedmusicserver.librarysources.User
+import ajdepaul.taggedmusicserver.models.TagTypeModel
+import ajdepaul.taggedmusicserver.models.UserModel
 import ajdepaul.taggedmusicserver.routes.audioRouting
 import ajdepaul.taggedmusicserver.routes.loginRouting
 import ajdepaul.taggedmusicserver.routes.songRouting
@@ -143,8 +143,9 @@ fun createTestLibrarySource(saltRounds: Int): InMemoryLibrarySource {
     val librarySource = InMemoryLibrarySource()
 
     librarySource.addUser(
-        User(1, "username", String(Bcrypt.hash("password", saltRounds))),
-        TagType(0)
+        UserModel(1, "admin", true),
+        String(Bcrypt.hash("password", saltRounds)),
+        TagTypeModel("", 0)
     )
 
     return librarySource
