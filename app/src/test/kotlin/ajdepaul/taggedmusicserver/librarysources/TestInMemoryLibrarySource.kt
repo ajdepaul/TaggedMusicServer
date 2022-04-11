@@ -4,10 +4,7 @@
  */
 package ajdepaul.taggedmusicserver.librarysources
 
-import ajdepaul.taggedmusicserver.models.SongModel
-import ajdepaul.taggedmusicserver.models.TagModel
-import ajdepaul.taggedmusicserver.models.TagTypeModel
-import ajdepaul.taggedmusicserver.models.UserModel
+import ajdepaul.taggedmusicserver.models.*
 import org.junit.Assert.*
 import org.junit.Test
 import java.time.LocalDateTime
@@ -21,9 +18,9 @@ class TestInMemoryLibrarySource {
     private val tag3 = TagModel("tag3", null, "description3")
 
     // test songs
-    private val song01 = SongModel(
+    private val song1 = SongModel(
         1,
-        "song01.mp3",
+        "song1.mp3",
         "title1",
         1,
         1,
@@ -34,7 +31,7 @@ class TestInMemoryLibrarySource {
         setOf("tag0")
     )
     private val song2 = SongModel(
-        2,
+        1,
         "song2.mp3",
         "title2",
         2,
@@ -46,7 +43,7 @@ class TestInMemoryLibrarySource {
         setOf("tag0")
     )
     private val song3 = SongModel(
-        3,
+        1,
         "song3.mp3",
         "title3",
         3,
@@ -58,7 +55,7 @@ class TestInMemoryLibrarySource {
         setOf("tag0")
     )
     private val song4 = SongModel(
-        4,
+        2,
         "song4.mp3",
         "title4",
         4,
@@ -70,7 +67,7 @@ class TestInMemoryLibrarySource {
         setOf("tag0", "tag1")
     )
     private val song5 = SongModel(
-        5,
+        3,
         "song5.mp3",
         "title5",
         5,
@@ -82,7 +79,7 @@ class TestInMemoryLibrarySource {
         setOf("tag0", "tag2")
     )
     private val song6 = SongModel(
-        6,
+        4,
         "song6.mp3",
         "title6",
         6,
@@ -104,22 +101,22 @@ class TestInMemoryLibrarySource {
         librarySource.addUser(UserModel(3, "usernameC", false), "passHash3", TagTypeModel("", 3))
 
         // data
-        librarySource.putData(1, "data0", "value1")
-        librarySource.putData(2, "data0", "value2")
-        librarySource.putData(3, "data0", "value3")
+        librarySource.putData(1, DataEntryModel("data0", "value1"))
+        librarySource.putData(2, DataEntryModel("data0", "value2"))
+        librarySource.putData(3, DataEntryModel("data0", "value3"))
 
-        librarySource.putData(1, "data1", "value4")
-        librarySource.putData(2, "data2", "value5")
-        librarySource.putData(3, "data3", "value6")
+        librarySource.putData(1, DataEntryModel("data1", "value4"))
+        librarySource.putData(2, DataEntryModel("data2", "value5"))
+        librarySource.putData(3, DataEntryModel("data3", "value6"))
 
         // tag types
-        librarySource.putTagType(1, "tagType0", TagType(1))
-        librarySource.putTagType(2, "tagType0", TagType(2))
-        librarySource.putTagType(3, "tagType0", TagType(3))
+        librarySource.putTagType(1, TagTypeModel("tagType0", 1))
+        librarySource.putTagType(2, TagTypeModel("tagType0", 2))
+        librarySource.putTagType(3, TagTypeModel("tagType0", 3))
 
-        librarySource.putTagType(1, "tagType1", TagType(4))
-        librarySource.putTagType(2, "tagType2", TagType(5))
-        librarySource.putTagType(3, "tagType3", TagType(6))
+        librarySource.putTagType(1, TagTypeModel("tagType1", 4))
+        librarySource.putTagType(2, TagTypeModel("tagType2", 5))
+        librarySource.putTagType(3, TagTypeModel("tagType3", 6))
 
         // tags
         librarySource.putTag(1, tag0)
@@ -131,13 +128,13 @@ class TestInMemoryLibrarySource {
         librarySource.putTag(3, tag3)
 
         // songs
-        librarySource.putSong(1, "fileName0.mp3", song1)
-        librarySource.putSong(2, "fileName0.mp3", song2)
-        librarySource.putSong(3, "fileName0.mp3", song3)
+        librarySource.putSong(1, song1)
+        librarySource.putSong(2, song2)
+        librarySource.putSong(3, song3)
 
-        librarySource.putSong(1, "fileName1.mp3", song4)
-        librarySource.putSong(2, "fileName2.mp3", song5)
-        librarySource.putSong(3, "fileName3.mp3", song6)
+        librarySource.putSong(1, song4)
+        librarySource.putSong(2, song5)
+        librarySource.putSong(3, song6)
 
         return librarySource
     }
@@ -160,15 +157,15 @@ class TestInMemoryLibrarySource {
 
         librarySource.getDefaultTagType(1).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
-            assertEquals(TagType(1), response.result)
+            assertEquals(TagTypeModel("", 1), response.result)
         }
         librarySource.getDefaultTagType(2).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
-            assertEquals(TagType(2), response.result)
+            assertEquals(TagTypeModel("", 2), response.result)
         }
         librarySource.getDefaultTagType(3).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
-            assertEquals(TagType(3), response.result)
+            assertEquals(TagTypeModel("", 3), response.result)
         }
 
         // expected failure
@@ -183,39 +180,39 @@ class TestInMemoryLibrarySource {
         val librarySource = createTestLibrarySource()
 
         // key shared between users
-        librarySource.hasSong(1, "fileName0.mp3").let { response ->
+        librarySource.hasSong(1, 1).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertTrue(response.result)
         }
-        librarySource.hasSong(2, "fileName0.mp3").let { response ->
+        librarySource.hasSong(2, 1).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertTrue(response.result)
         }
-        librarySource.hasSong(3, "fileName0.mp3").let { response ->
+        librarySource.hasSong(3, 1).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertTrue(response.result)
         }
 
         // key not shared between users
-        librarySource.hasSong(1, "fileName1.mp3").let { response ->
+        librarySource.hasSong(1, 2).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertTrue(response.result)
         }
-        librarySource.hasSong(2, "fileName2.mp3").let { response ->
+        librarySource.hasSong(2, 3).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertTrue(response.result)
         }
-        librarySource.hasSong(3, "fileName3.mp3").let { response ->
+        librarySource.hasSong(3, 4).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertTrue(response.result)
         }
 
         // expected failure
-        librarySource.hasSong(1, "fileName2.mp3").let { response ->
+        librarySource.hasSong(1, 3).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertFalse(response.result)
         }
-        librarySource.hasSong(4, "fileName0.mp3").let { response ->
+        librarySource.hasSong(4, 1).let { response ->
             assertEquals(Response.Status.SUCCESS, response.status)
             assertFalse(response.result)
         }

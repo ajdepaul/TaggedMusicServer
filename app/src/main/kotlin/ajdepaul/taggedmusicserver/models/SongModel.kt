@@ -19,10 +19,4 @@ data class SongModel(
     val modifyDate: LocalDateTime = LocalDateTime.now(),
     val playCount: Int = 0,
     val tags: Set<String> = setOf()
-) {
-    override fun hashCode(): Int = id.hashCode()
-    override fun equals(other: Any?): Boolean {
-        return if (other !is SongModel) false
-        else id == other.id
-    }
-}
+)

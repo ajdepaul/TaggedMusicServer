@@ -11,10 +11,4 @@ data class TagModel(
     val name: String,
     val type: String? = null,
     val description: String? = null
-) {
-    override fun hashCode(): Int = name.hashCode()
-    override fun equals(other: Any?): Boolean {
-        return if (other !is TagModel) false
-        else name == other.name
-    }
-}
+)

@@ -10,10 +10,4 @@ import kotlinx.serialization.Serializable
 data class TagTypeModel(
     val name: String,
     val color: Int
-) {
-    override fun hashCode(): Int = name.hashCode()
-    override fun equals(other: Any?): Boolean {
-        return if (other !is TagTypeModel) false
-        else name == other.name
-    }
-}
+)

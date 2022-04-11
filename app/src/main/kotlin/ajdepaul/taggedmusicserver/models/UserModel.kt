@@ -11,10 +11,4 @@ data class UserModel(
     val id: Int,
     val username: String,
     val admin: Boolean = false
-) {
-    override fun hashCode(): Int = id.hashCode()
-    override fun equals(other: Any?): Boolean {
-        return if (other !is UserModel) false
-        else id == other.id
-    }
-}
+)
